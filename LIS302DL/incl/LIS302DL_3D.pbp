@@ -1,0 +1,186 @@
+'*******************************************************************************
+' Accelerometer
+'-------------------------------------------------------------------------------
+Accelerometer_Block_Init:
+    HIGH Power_I2C
+    pause 100
+        '---------------------
+        'Axes
+        I2CAddress_3D = $20     
+        TEMP = %01000111        
+        gosub I2C_Write_3D      
+        '---------------------
+        'Interrupts
+        I2CAddress_3D = $22     
+        TEMP = %00000100        
+        gosub I2C_Write_3D
+        '---------------------
+        gosub Accelerometer_Clear
+    Return
+
+Accelerometer_Clear:            ' If sensor has moved during event hadling, then interrupt must be cleared once before new sequence
+    I2CAddress_3D = $31         ' Clear interrupt request
+    gosub I2C_Read_3D
+    I2CAddress_3D = $23         ' Reset acceration/tilt value after interrupt 
+    gosub I2C_Read_3D
+    Return
+'-------------------------------------------------------------------------------
+Acceleration_Menu:
+    Gosub Lcd_Clear
+    Counter_3D = 4
+    COUNTER_tot = 0
+    gosub Accelerometer_Block_Init   
+    Gosub Lcd_Clear
+    gosub Draw_Back
+    
+Acceleration_Menu_loop:
+    toggle LED
+    pause 20
+    Counter_3D = Counter_3D + 1
+    '---------------------------
+    I2CAddress_3D = $29
+    gosub I2C_Read_3D
+    if TEMP > 127 then
+            X_Data = (256 - TEMP) + X_Data
+        else      
+            X_Data = TEMP + X_Data
+    ENDIF
+    '---------------------------
+    I2CAddress_3D = $2B
+    gosub I2C_Read_3D
+    if TEMP > 127 then
+            Y_Data = (256 - TEMP) + Y_Data
+        else      
+            Y_Data = TEMP + Y_Data
+    ENDIF
+    '---------------------------
+    I2CAddress_3D = $2D
+    gosub I2C_Read_3D
+    if TEMP > 127 then
+            Z_Data = (256 - TEMP) + Z_Data
+        else      
+            Z_Data = TEMP + Z_Data
+    ENDIF
+    '---------------------------
+    IF Counter_3D = 5 then
+        Counter_3D = 0
+        Acceleratio = X_Data    
+        gosub Calculate_Blocks
+        PosX=8:PosY=2:Gosub Lcd_GotoXY           
+        gosub Show_Acceleratio
+        PosX=43
+        gosub Display_Blocks
+
+        Acceleratio = Y_Data    
+        gosub Calculate_Blocks
+        PosX=8:PosY=3:Gosub Lcd_GotoXY           
+        gosub Show_Acceleratio
+        PosX=51
+        gosub Display_Blocks
+
+        Acceleratio = Z_Data    
+        gosub Calculate_Blocks
+        PosX=8:PosY=4:Gosub Lcd_GotoXY           
+        gosub Show_Acceleratio
+        PosX=58
+        gosub Display_Blocks
+        
+        X_Data = 0 : Y_Data = 0 : Z_Data = 0
+        endif
+        '---------------------------     
+    goto Acceleration_Menu_loop 
+    
+'-------------------------------------------------------------------------------
+Calculate_Blocks:
+    Acceleratio = ((Acceleratio * 18)/ 5)
+    Offset_tot = ((Acceleratio * 5 / (3*18))/ 18)
+    If Offset_tot > 5 then Offset_tot = 5
+    Block_nr_tot = ((Acceleratio * 5 / (3 * 2))/18) - (Offset_tot * 9)
+    return
+'-------------------------------------------------------------------------------
+Show_Acceleratio:              
+    LcdStr(0) = Acceleratio/1000 
+    LcdStr(1) = Acceleratio/100 - LcdStr(0)*10
+    LcdStr(2) = Acceleratio/10 - LcdStr(0)*100 - LcdStr(1)*10
+        Lcd_Data=LcdStr(0)
+        Gosub Lcd_SentChar
+        high Lcd_DC
+        Lcd_Data=$40:Gosub Write_Lcd_Single
+        Lcd_Data=$00:Gosub Write_Lcd_Single        
+        Lcd_Data=LcdStr(1)
+        Gosub Lcd_SentChar
+        Lcd_Data=LcdStr(2)
+        Gosub Lcd_SentChar
+    return
+'-------------------------------------------------------------------------------
+Display_Blocks:
+    IF Offset_tot < 1 then
+            PosY=6:Gosub Lcd_GotoXY
+            lcd_data = Block_nr_tot
+            gosub Send_Block
+        else 
+            for TEMP = 0 to (Offset_tot - 1)
+                PosY=(6 - TEMP):Gosub Lcd_GotoXY     
+                lcd_data = 8
+                gosub Send_Block
+            next TEMP
+    endif
+    
+    if Offset_tot > 0 then
+        PosY=(6 - Offset_tot ):Gosub Lcd_GotoXY
+        lcd_data = Block_nr_tot
+        gosub Send_Block 
+    endif
+
+    for TEMP = (Offset_tot +1 ) to 5
+        PosY=(6-TEMP):Gosub Lcd_GotoXY                
+        lcd_data = 0
+        gosub Send_Block
+    next TEMP
+    return
+    
+'-------------------------------------------------------------------------------            
+Send_Block:    
+    sELECT CASE lcd_data
+        Case 0              
+            Lcd_Data(0)=$00:Lcd_Data(1)=$00:Lcd_Data(2)=$00:Lcd_Data(3)=$00:Lcd_Data(4)=$00:Lcd_Data(5)=$00
+        Case 1
+            Lcd_Data(0)=$80:Lcd_Data(1)=$80:Lcd_Data(2)=$80:Lcd_Data(3)=$80:Lcd_Data(4)=$80:Lcd_Data(5)=$80
+        Case 2
+            Lcd_Data(0)=$C0:Lcd_Data(1)=$C0:Lcd_Data(2)=$C0:Lcd_Data(3)=$C0:Lcd_Data(4)=$C0:Lcd_Data(5)=$C0
+        Case 3                  
+            Lcd_Data(0)=$E0:Lcd_Data(1)=$E0:Lcd_Data(2)=$E0:Lcd_Data(3)=$E0:Lcd_Data(4)=$E0:Lcd_Data(5)=$E0
+        Case 4
+            Lcd_Data(0)=$F0:Lcd_Data(1)=$F0:Lcd_Data(2)=$F0:Lcd_Data(3)=$F0:Lcd_Data(4)=$F0:Lcd_Data(5)=$F0
+        Case 5
+            Lcd_Data(0)=$F8:Lcd_Data(1)=$F8:Lcd_Data(2)=$F8:Lcd_Data(3)=$F8:Lcd_Data(4)=$F8:Lcd_Data(5)=$F8
+        Case 6
+            Lcd_Data(0)=$FC:Lcd_Data(1)=$FC:Lcd_Data(2)=$FC:Lcd_Data(3)=$FC:Lcd_Data(4)=$FC:Lcd_Data(5)=$FC
+        Case 7
+            Lcd_Data(0)=$FE:Lcd_Data(1)=$FE:Lcd_Data(2)=$FE:Lcd_Data(3)=$FE:Lcd_Data(4)=$FE:Lcd_Data(5)=$FE
+        Case 8                   
+            Lcd_Data(0)=$FF:Lcd_Data(1)=$FF:Lcd_Data(2)=$FF:Lcd_Data(3)=$FF:Lcd_Data(4)=$FF:Lcd_Data(5)=$FF
+    end SELECT
+    gosub Write_LCD
+return
+'-------------------------------------------------------------------------------       
+Draw_Back:
+    PosX=66:PosY=1:Gosub Lcd_GotoXY
+    Lcd_Data(0)=$FF:Lcd_Data(1)=$81:Lcd_Data(2)=$81:Lcd_Data(3)=$00:Lcd_Data(4)=$00:Lcd_Data(5)=$00
+    gosub Write_LCD
+    for TEMP = 2 to 6
+        PosX=66:PosY=TEMP:Gosub Lcd_GotoXY
+        Lcd_Data(0)=$FF:Lcd_Data(1)=$80:Lcd_Data(2)=$80:Lcd_Data(3)=$00:Lcd_Data(4)=$00:Lcd_Data(5)=$00
+        gosub Write_LCD
+    next TEMP    
+    return
+'-------------------------------------------------------------------------------       
+I2C_Write_3D:
+    I2CWRITE SDA_3D, SCL_3D, I2CDevice_3D_write, I2CAddress_3D,[ TEMP ]
+    Return
+
+I2C_Read_3D:
+    I2cread SDA_3D, SCL_3D, I2CDevice_3D_read, I2CAddress_3D,[ TEMP ]
+    Return
+
+'*******************************************************************************

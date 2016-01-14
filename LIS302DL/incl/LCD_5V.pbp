@@ -1,0 +1,21 @@
+@  if (Nokia3310_7110 == 0)
+@  if (BikerLCD == 0)
+    Contrast = $d1
+@  endif
+@  if (BikerLCD == 1)
+    Contrast = $BF
+@  endif
+'Intensity = 46
+'A = 0
+@  endif
+'-----------------------------
+@  if (Nokia3310_7110 == 1)
+@  if (BikerLCD == 0)
+    Contrast = 33
+@  endif
+@  if (BikerLCD == 1)
+    Contrast = 33
+@  endif
+'Intensity = 71
+'A = 1
+@  endif

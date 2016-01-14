@@ -1,0 +1,26 @@
+    COUNTER             var byte
+    TEMP                var Byte       
+    i                   var Byte
+    j                   var Word
+    k                   var Byte
+    PosX                var Byte
+    PosY                var Byte
+    LcdStr              var Byte [4]
+    Lcd_Data            var Byte [6]
+    I2CDevice_3D_read   var byte  
+    I2CDevice_3D_write  var byte  
+    I2CAddress_3D       var byte  
+    Contrast            var byte
+    Acceleratio         var word
+    X_Data              var word
+    Y_Data              var word
+    Z_Data              var word 
+    Offset_tot          var byte
+    Block_nr_tot        var byte
+'Extra Variable for 7110 LCD
+    ColumnNum           var byte        'Column number
+    LowBits             VAR BYTE        'Low Bits for column
+    HighBits            VAR BYTE        'High Bits for Column
+    
+    COUNTER_3D          var byte
+    COUNTER_tot         var word

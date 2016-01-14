@@ -1,0 +1,282 @@
+Lcd_Init:
+@  if (Nokia3310_7110 == 0)
+    Low Lcd_RST                                     'RESET LCD
+    High Lcd_RST
+    Low Lcd_DC
+    Lcd_Data= $21: Gosub Write_Lcd_Single           'LCD EXTENDED COMMANDS
+    Lcd_Data= Contrast: Gosub Write_Lcd_Single      'SET LCD Vop (CONTRAST) c8 -> 48 = 5.95V
+    Lcd_Data= $06: Gosub Write_Lcd_Single		    'SET TEMP COEFFICENT
+    Lcd_Data= $10: Gosub Write_Lcd_Single		    'LCD BIAS MODE, 1:100=$10, 1:48=$13
+    Lcd_Data= $20: Gosub Write_Lcd_Single		    'LCD STANDARD COMMANDS
+    Lcd_Data= $0c: Gosub Write_Lcd_Single           'LCD IN NORMAL MODE
+    high Lcd_DC
+    Return
+@  endif
+@  if (Nokia3310_7110 == 1)
+    Low Lcd_RST
+    high Lcd_RST
+    LOW Lcd_CS
+    low Lcd_DC    
+    Lcd_Data = %11100010:Gosub Write_Lcd_Single     ' Reset
+    Lcd_Data = %10100010:Gosub Write_Lcd_Single     ' select LCD bias
+'-------------------------------------------------------------------------------
+'Näyttö ylösalaisin
+    Lcd_Data = %10100000:Gosub Write_Lcd_Single     ' select segment driver direction (normal)
+    Lcd_Data = %11001000:Gosub Write_Lcd_Single     ' select common output mode (reverse)
+'-------------------------------------------------------------------------------
+    Lcd_Data = %10100110:Gosub Write_Lcd_Single     ' select display (normal display) 
+    Lcd_Data = %00100100:Gosub Write_Lcd_Single     ' set V5 resistor ratio
+    Lcd_Data = %10000001:Gosub Write_Lcd_Single     ' set electronic volume
+    Lcd_Data = Contrast:Gosub Write_Lcd_Single      ' set LCD brightness
+    Lcd_Data = %00101111:Gosub Write_Lcd_Single     ' power control
+    Lcd_Data = %10101111:Gosub Write_Lcd_Single     ' LCD ON
+    high Lcd_DC
+    Return
+@  endif
+
+Lcd_Contrast:
+@  if (Nokia3310_7110 == 0)
+    Low Lcd_DC
+    Lcd_Data= Contrast: Gosub Write_Lcd_Single    
+    high Lcd_DC
+    Return
+@  endif
+@  if (Nokia3310_7110 == 1)
+    low Lcd_DC
+    Lcd_Data = %10000001:Gosub Write_Lcd_Single     'set electronic volume
+    Lcd_Data = Contrast:Gosub Write_Lcd_Single      'set LCD brightness
+    high Lcd_DC
+    Return
+@  endif
+    
+Lcd_Clear:
+@  if (Nokia3310_7110 == 0)
+    Gosub Lcd_Home
+    Lcd_Data(0)=0:Lcd_Data(1)=0:Lcd_Data(2)=0:Lcd_Data(3)=0:Lcd_Data(4)=0:Lcd_Data(5)=0
+    For i=1 to 84
+    gosub Write_LCD
+    Next i
+    Return
+@  endif
+@  if (Nokia3310_7110 == 1)                                     
+    low Lcd_DC
+    Lcd_Data(0)=0:Lcd_Data(1)=0:Lcd_Data(2)=0:Lcd_Data(3)=0:Lcd_Data(4)=0:Lcd_Data(5)=0
+    FOR PosY = 0 TO 8
+        low Lcd_DC
+        Lcd_Data = 176 + PosY:Gosub Write_Lcd_Single
+        Lcd_Data = %00010000:Gosub Write_Lcd_Single 'High 4 bits of column address
+        Lcd_Data = %00000000:Gosub Write_Lcd_Single 'Low 4 bits of column address
+        high Lcd_DC
+        FOR ColumnNum = 0 TO 21
+            gosub Write_LCD
+        NEXT ColumnNum
+    NEXT PosY
+    High Lcd_DC
+    Return
+@  endif
+
+Lcd_Home:
+    PosX=0:PosY=0:Gosub Lcd_GotoXY
+    Return
+
+Lcd_GotoXY:
+@  if (Nokia3310_7110 == 0)
+    Low Lcd_DC
+    Lcd_Data=%01000000 | PosY :Gosub Write_Lcd_Single	'Y
+    Lcd_Data=%10000000 | PosX :Gosub Write_Lcd_Single	'X
+    high Lcd_DC
+    Return
+@  endif
+@  if (Nokia3310_7110 == 1)
+    low Lcd_DC
+    Lcd_Data = 176 + PosY:Gosub Write_Lcd_Single         
+    LowBits = (PosX+18+6) & %00001111                   'Bitwise AND
+    HighBits = (PosX+18+6) & %11110000                  'Bitwise AND
+    HighBits = HighBits >> 4                            'Shift right 4 bits
+    Lcd_Data = %00010000 + HighBits:Gosub Write_Lcd_Single
+    Lcd_Data = %00000000 + LowBits:Gosub Write_Lcd_Single
+    High Lcd_DC
+    Return
+@  endif
+
+Scr_Invert:                                             
+@  if (Nokia3310_7110 == 0)
+    Low Lcd_DC                                
+    Lcd_Data= %00001101:Gosub Write_Lcd_Single    
+    high Lcd_DC
+    return
+@  endif
+@  if (Nokia3310_7110 == 1)
+    low Lcd_DC                          
+    Lcd_Data = %10100111:Gosub Write_Lcd_Single     
+    High Lcd_DC
+    return
+@  endif
+
+Scr_Blank:
+@  if (Nokia3310_7110 == 0)
+    low Lcd_DC                                        
+    Lcd_Data= %00001000:Gosub Write_Lcd_Single    
+    high Lcd_DC
+    return
+@  endif
+@  if (Nokia3310_7110 == 1)
+    low Lcd_DC                                          
+    Lcd_Data = %10100111:Gosub Write_Lcd_Single     
+    High Lcd_DC
+    return
+@  endif
+
+Scr_Normal:                                             
+@  if (Nokia3310_7110 == 0)
+    Low Lcd_DC
+    Lcd_Data= %00001100:Gosub Write_Lcd_Single
+    high Lcd_DC
+    return
+@  endif
+@  if (Nokia3310_7110 == 1)
+    low Lcd_DC
+    Lcd_Data = %10100110:Gosub Write_Lcd_Single  
+    High Lcd_DC
+    return
+@  endif
+
+@  if (Nokia3310_7110 == 1)
+LCD_ON:
+    low Lcd_DC    
+    Lcd_Data = %10101111:Gosub Write_Lcd_Single
+    High Lcd_DC
+    return
+
+LCD_OFF:
+    low Lcd_DC    
+    Lcd_Data = %10101110:Gosub Write_Lcd_Single
+    High Lcd_DC
+    return
+@  endif
+
+'-------------------------------------------------------------------------------
+Lcd_SentChar:
+    sELECT CASE lcd_data
+        Case 0                   
+        	Lcd_Data(0)=$3E:Lcd_Data(1)=$51:Lcd_Data(2)=$49:Lcd_Data(3)=$45:Lcd_Data(4)=$3E:Lcd_Data(5)=$00 ' // 0
+        Case 1                   
+        	Lcd_Data(0)=$00:Lcd_Data(1)=$42:Lcd_Data(2)=$7F:Lcd_Data(3)=$40:Lcd_Data(4)=$00:Lcd_Data(5)=$00 ' // 1
+        Case 2                   
+        	Lcd_Data(0)=$42:Lcd_Data(1)=$61:Lcd_Data(2)=$51:Lcd_Data(3)=$49:Lcd_Data(4)=$46:Lcd_Data(5)=$00 ' // 2
+        Case 3                  
+        	Lcd_Data(0)=$21:Lcd_Data(1)=$41:Lcd_Data(2)=$45:Lcd_Data(3)=$4B:Lcd_Data(4)=$31:Lcd_Data(5)=$00 ' // 3
+        Case 4                   
+        	Lcd_Data(0)=$18:Lcd_Data(1)=$14:Lcd_Data(2)=$12:Lcd_Data(3)=$7F:Lcd_Data(4)=$10:Lcd_Data(5)=$00 ' // 4
+        Case 5                   
+        	Lcd_Data(0)=$27:Lcd_Data(1)=$45:Lcd_Data(2)=$45:Lcd_Data(3)=$45:Lcd_Data(4)=$39:Lcd_Data(5)=$00 ' // 5
+        Case 6                   
+        	Lcd_Data(0)=$3C:Lcd_Data(1)=$4A:Lcd_Data(2)=$49:Lcd_Data(3)=$49:Lcd_Data(4)=$30:Lcd_Data(5)=$00 ' // 6
+        Case 7                   
+        	Lcd_Data(0)=$01:Lcd_Data(1)=$71:Lcd_Data(2)=$09:Lcd_Data(3)=$05:Lcd_Data(4)=$03:Lcd_Data(5)=$00 ' // 7
+        Case 8                   
+        	Lcd_Data(0)=$36:Lcd_Data(1)=$49:Lcd_Data(2)=$49:Lcd_Data(3)=$49:Lcd_Data(4)=$36:Lcd_Data(5)=$00 ' // 8
+        Case 9                   
+        	Lcd_Data(0)=$06:Lcd_Data(1)=$49:Lcd_Data(2)=$49:Lcd_Data(3)=$29:Lcd_Data(4)=$1E:Lcd_Data(5)=$00 ' // 9
+        Case 32                   
+        	Lcd_Data(0)=$00:Lcd_Data(1)=$00:Lcd_Data(2)=$00:Lcd_Data(3)=$00:Lcd_Data(4)=$00:Lcd_Data(5)=$00 ' // sp
+        Case 71                   
+        	Lcd_Data(0)=$3E:Lcd_Data(1)=$41:Lcd_Data(2)=$49:Lcd_Data(3)=$49:Lcd_Data(4)=$7A:Lcd_Data(5)=$00 ' // G
+    end SELECT
+    gosub Write_LCD
+    Return
+
+'Lue_I2C:  
+'    I2cread SDA, SCL, I2CDeviceEEprom, I2CAddressEEprom,[STR Lcd_Data\6]
+'    gosub Write_LCD
+'    Return
+    
+Write_LCD:
+    Low Lcd_CS
+    Lcd_SDA = Lcd_Data.0(7)  : Lcd_CLK = 1 : Lcd_CLK = 0
+    Lcd_SDA = Lcd_Data.0(6)  : Lcd_CLK = 1 : Lcd_CLK = 0
+    Lcd_SDA = Lcd_Data.0(5)  : Lcd_CLK = 1 : Lcd_CLK = 0
+    Lcd_SDA = Lcd_Data.0(4)  : Lcd_CLK = 1 : Lcd_CLK = 0
+    Lcd_SDA = Lcd_Data.0(3)  : Lcd_CLK = 1 : Lcd_CLK = 0
+    Lcd_SDA = Lcd_Data.0(2)  : Lcd_CLK = 1 : Lcd_CLK = 0
+    Lcd_SDA = Lcd_Data.0(1)  : Lcd_CLK = 1 : Lcd_CLK = 0
+    Lcd_SDA = Lcd_Data.0(0)  : Lcd_CLK = 1 : Lcd_CLK = 0
+
+    Lcd_SDA = Lcd_Data.0(15) : Lcd_CLK = 1 : Lcd_CLK = 0
+    Lcd_SDA = Lcd_Data.0(14) : Lcd_CLK = 1 : Lcd_CLK = 0
+    Lcd_SDA = Lcd_Data.0(13) : Lcd_CLK = 1 : Lcd_CLK = 0
+    Lcd_SDA = Lcd_Data.0(12) : Lcd_CLK = 1 : Lcd_CLK = 0
+    Lcd_SDA = Lcd_Data.0(11) : Lcd_CLK = 1 : Lcd_CLK = 0
+    Lcd_SDA = Lcd_Data.0(10) : Lcd_CLK = 1 : Lcd_CLK = 0
+    Lcd_SDA = Lcd_Data.0(9)  : Lcd_CLK = 1 : Lcd_CLK = 0
+    Lcd_SDA = Lcd_Data.0(8)  : Lcd_CLK = 1 : Lcd_CLK = 0
+
+    Lcd_SDA = Lcd_Data.0(23) : Lcd_CLK = 1 : Lcd_CLK = 0
+    Lcd_SDA = Lcd_Data.0(22) : Lcd_CLK = 1 : Lcd_CLK = 0
+    Lcd_SDA = Lcd_Data.0(21) : Lcd_CLK = 1 : Lcd_CLK = 0
+    Lcd_SDA = Lcd_Data.0(20) : Lcd_CLK = 1 : Lcd_CLK = 0
+    Lcd_SDA = Lcd_Data.0(19) : Lcd_CLK = 1 : Lcd_CLK = 0
+    Lcd_SDA = Lcd_Data.0(18) : Lcd_CLK = 1 : Lcd_CLK = 0
+    Lcd_SDA = Lcd_Data.0(17) : Lcd_CLK = 1 : Lcd_CLK = 0
+    Lcd_SDA = Lcd_Data.0(16) : Lcd_CLK = 1 : Lcd_CLK = 0
+
+    Lcd_SDA = Lcd_Data.0(31) : Lcd_CLK = 1 : Lcd_CLK = 0
+    Lcd_SDA = Lcd_Data.0(30) : Lcd_CLK = 1 : Lcd_CLK = 0
+    Lcd_SDA = Lcd_Data.0(29) : Lcd_CLK = 1 : Lcd_CLK = 0
+    Lcd_SDA = Lcd_Data.0(28) : Lcd_CLK = 1 : Lcd_CLK = 0
+    Lcd_SDA = Lcd_Data.0(27) : Lcd_CLK = 1 : Lcd_CLK = 0
+    Lcd_SDA = Lcd_Data.0(26) : Lcd_CLK = 1 : Lcd_CLK = 0
+    Lcd_SDA = Lcd_Data.0(25) : Lcd_CLK = 1 : Lcd_CLK = 0
+    Lcd_SDA = Lcd_Data.0(24) : Lcd_CLK = 1 : Lcd_CLK = 0
+
+    Lcd_SDA = Lcd_Data.0(39) : Lcd_CLK = 1 : Lcd_CLK = 0
+    Lcd_SDA = Lcd_Data.0(38) : Lcd_CLK = 1 : Lcd_CLK = 0
+    Lcd_SDA = Lcd_Data.0(37) : Lcd_CLK = 1 : Lcd_CLK = 0
+    Lcd_SDA = Lcd_Data.0(36) : Lcd_CLK = 1 : Lcd_CLK = 0
+    Lcd_SDA = Lcd_Data.0(35) : Lcd_CLK = 1 : Lcd_CLK = 0
+    Lcd_SDA = Lcd_Data.0(34) : Lcd_CLK = 1 : Lcd_CLK = 0
+    Lcd_SDA = Lcd_Data.0(33) : Lcd_CLK = 1 : Lcd_CLK = 0
+    Lcd_SDA = Lcd_Data.0(32) : Lcd_CLK = 1 : Lcd_CLK = 0
+
+    Lcd_SDA = Lcd_Data.0(47) : Lcd_CLK = 1 : Lcd_CLK = 0
+    Lcd_SDA = Lcd_Data.0(46) : Lcd_CLK = 1 : Lcd_CLK = 0
+    Lcd_SDA = Lcd_Data.0(45) : Lcd_CLK = 1 : Lcd_CLK = 0
+    Lcd_SDA = Lcd_Data.0(44) : Lcd_CLK = 1 : Lcd_CLK = 0
+    Lcd_SDA = Lcd_Data.0(43) : Lcd_CLK = 1 : Lcd_CLK = 0
+    Lcd_SDA = Lcd_Data.0(42) : Lcd_CLK = 1 : Lcd_CLK = 0
+    Lcd_SDA = Lcd_Data.0(41) : Lcd_CLK = 1 : Lcd_CLK = 0
+    Lcd_SDA = Lcd_Data.0(40) : Lcd_CLK = 1 : Lcd_CLK = 0
+    High Lcd_CS
+    Return
+
+'Lue_I2C_single:
+'    I2cread SDA, SCL, I2CDeviceEEprom, I2CAddressEEprom,[ Lcd_Data ]
+'    gosub Write_Lcd_Single
+'    Return
+
+Write_Lcd_Single:
+    Low Lcd_CS
+    Lcd_SDA = Lcd_Data.0(7)  : Lcd_CLK = 1 : Lcd_CLK = 0
+    Lcd_SDA = Lcd_Data.0(6)  : Lcd_CLK = 1 : Lcd_CLK = 0
+    Lcd_SDA = Lcd_Data.0(5)  : Lcd_CLK = 1 : Lcd_CLK = 0
+    Lcd_SDA = Lcd_Data.0(4)  : Lcd_CLK = 1 : Lcd_CLK = 0
+    Lcd_SDA = Lcd_Data.0(3)  : Lcd_CLK = 1 : Lcd_CLK = 0
+    Lcd_SDA = Lcd_Data.0(2)  : Lcd_CLK = 1 : Lcd_CLK = 0
+    Lcd_SDA = Lcd_Data.0(1)  : Lcd_CLK = 1 : Lcd_CLK = 0
+    Lcd_SDA = Lcd_Data.0(0)  : Lcd_CLK = 1 : Lcd_CLK = 0
+    High Lcd_CS
+    Return
+
+Lcd_SentString2:
+    For k=0 to 2
+    Lcd_Data=LcdStr(k)
+    Gosub Lcd_SentChar
+    next k
+    Return
+
+Lcd_SentString3:
+    For k=0 to 1
+    Lcd_Data=LcdStr(k)
+    Gosub Lcd_SentChar
+    next k
+    Return                

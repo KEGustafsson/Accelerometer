@@ -1,0 +1,18 @@
+;----[18F4520 Hardware Configuration]-------------------------------------------
+#IF __PROCESSOR__ = "18F4520"
+  #DEFINE MCU_FOUND 1
+#CONFIG
+  CONFIG  OSC=INTIO67, FCMEN=OFF, IESO=ON, PWRT=ON, BOREN=OFF, BORV=3, WDT=ON
+  CONFIG  WDTPS=128, CCP2MX=PORTC, PBADEN=OFF, LPT1OSC=ON, MCLRE=ON, STVREN=ON
+  CONFIG  LVP=OFF, XINST=OFF, DEBUG=OFF, CP0=OFF, CP1=OFF, CP2=OFF, CP3=OFF
+  CONFIG  CPB=OFF, CPD=OFF, WRT0=OFF, WRT1=OFF, WRT2=OFF, WRT3=OFF, WRTC=OFF
+  CONFIG  WRTB=OFF, WRTD=OFF, EBTR0=OFF, EBTR1=OFF, EBTR2=OFF, EBTR3=OFF
+  CONFIG  EBTRB=OFF
+#ENDCONFIG
+#ENDIF
+
+;----[Verify Configs have been specified for Selected Processor]----------------
+;       Note: Only include this routine once, after all #CONFIG blocks
+#IFNDEF MCU_FOUND
+  #ERROR "No CONFIGs found for [" + __PROCESSOR__ +"]"
+#ENDIF

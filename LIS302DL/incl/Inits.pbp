@@ -1,0 +1,30 @@
+'###############################################################################
+'------------------------------------------------------------------------------- 
+' 1st init and mode change inits
+'-------------------------------------------------------------------------------    
+init:
+    OSCCON = $70                'Int CLK 8MHz
+    OSCTUNE.6 = 1               'PLL 4x
+    TRISA = %11111111
+    ADCON1= %00001111           '$0F = disable A/D converter
+    TRISB = %00000001   
+    TRISC = %00000000
+    TRISD = %01000000
+    TRISE = %00000111
+    INTCON = %00000000          ' Enable global interrupt, Enable INT0 interrupt (RB0)
+    INTCON2.6=1                 ' Enable INT0 on rising edge
+    T2CON.2 = 0                 '1=ON 0=OFF
+    PortB = %00000000
+    PortC = %00000000
+    PortD = %00000000
+    PortE = %00000000
+                                'Command    SAD[6:1]    SAD[0] = SDO    R/W     SAD+R/W
+    I2CDevice_3D_read=$39       'Read       001110      0               1       00111001 (39h)
+    I2CDevice_3D_write=$38      'Write      001110      0               0       00111000 (38h)
+    High Lcd_Vcc
+    Pause 500
+    Gosub Lcd_INIT
+    Gosub Lcd_Clear
+    COUNTER = 4
+    goto Acceleration_Menu
+

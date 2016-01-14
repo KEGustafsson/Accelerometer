@@ -1,0 +1,15 @@
+    Lcd_CLK             VAR PortB.1     'LCD Clock
+    Lcd_DC              VAR PortB.2     'LCD Data/Command
+    Lcd_CS              VAR PortB.3     'LCD Chip select
+    Lcd_RST             VAR PortB.4     'LCD Reset
+    Lcd_VCC             VAR PortB.5     'LCD Power
+    Lcd_SDA             VAR PortB.6     'LCD Data
+    
+    SDA_3D              var PortC.7     'SDA_3D           
+    SCL_3D              VAR PortD.4     'SCL_3D
+    Power_I2C           VAR PortD.5     'Power_3D
+    Int1_3D             VAR PortD.6     'Int2_3D
+    Int2_3D             VAR PortD.7     'Int1_3D
+    
+    LED                 VAR PortD.3
+
