@@ -10,6 +10,8 @@
     Power_I2C           VAR PortD.5     'Power_3D
     Int1_3D             VAR PortD.6     'Int2_3D
     Int2_3D             VAR PortD.7     'Int1_3D
-    
+    Power_I2C_1Wire     VAR PortC.3     'I2C and 1Wire power        
     LED                 VAR PortD.3
+    Lights_ON_OFF       VAR PORTE.0     'Light ON OFF
+    Menu                VAR PORTE.1     'Menu
 

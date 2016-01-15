@@ -1,5 +1,5 @@
 define OSC 32
-DEFINE BikerLCD 0                      
+DEFINE BikerLCD 1                      
 DEFINE Nokia3310_7110 1                      
 
 INCLUDE "incl\PIC18F4520_config.pbp"

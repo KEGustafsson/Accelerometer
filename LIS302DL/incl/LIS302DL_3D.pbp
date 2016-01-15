@@ -34,7 +34,6 @@ Acceleration_Menu:
     gosub Draw_Back
     
 Acceleration_Menu_loop:
-    toggle LED
     pause 20
     Counter_3D = Counter_3D + 1
     '---------------------------
@@ -86,8 +85,8 @@ Acceleration_Menu_loop:
         gosub Display_Blocks
         
         X_Data = 0 : Y_Data = 0 : Z_Data = 0
-        endif
-        '---------------------------     
+    endif
+    '---------------------------     
     goto Acceleration_Menu_loop 
     
 '-------------------------------------------------------------------------------

@@ -14,7 +14,7 @@
     Contrast = 33
 @  endif
 @  if (BikerLCD == 1)
-    Contrast = 33
+    Contrast = 28
 @  endif
 'Intensity = 71
 'A = 1

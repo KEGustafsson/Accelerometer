@@ -21,6 +21,7 @@ init:
                                 'Command    SAD[6:1]    SAD[0] = SDO    R/W     SAD+R/W
     I2CDevice_3D_read=$39       'Read       001110      0               1       00111001 (39h)
     I2CDevice_3D_write=$38      'Write      001110      0               0       00111000 (38h)
+    high Power_I2C_1Wire
     High Lcd_Vcc
     Pause 500
     Gosub Lcd_INIT
